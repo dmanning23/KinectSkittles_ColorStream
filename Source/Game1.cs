@@ -11,6 +11,8 @@ namespace KinectSkittles.Windows
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+		Texture2D _circle;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -38,6 +40,8 @@ namespace KinectSkittles.Windows
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
+			_circle = Content.Load<Texture2D>("circle");
 
             // TODO: use this.Content to load your game content here
         }
@@ -69,9 +73,23 @@ namespace KinectSkittles.Windows
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.Black);
+
+			Rectangle dest = new Rectangle();
 
             // TODO: Add your drawing code here
+			spriteBatch.Begin();
+
+			for (int i = 0; i < 1024; i += 16)
+			{
+				for (int j = 0; j < 768; j += 16)
+				{
+					//draw the circle
+					spriteBatch.Draw(_circle, new Rectangle(i, j, 16, 16), Color.White);
+				}
+			}
+
+			spriteBatch.End();
 
             base.Draw(gameTime);
         }

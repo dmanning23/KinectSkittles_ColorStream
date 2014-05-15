@@ -11,6 +11,8 @@
     <RootNamespace>KinectSkittles.Windows</RootNamespace>
     <AssemblyName>KinectSkittles.Windows</AssemblyName>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -21,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE;WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -30,6 +33,7 @@
     <DefineConstants>TRACE;WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
@@ -53,8 +57,18 @@
     <Content Include="Icon.ico" />
     <Content Include="SDL.dll" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
+    <ProjectReference Include="..\externals\AverageBuddy\Windows\AverageBuddy.Windows.csproj">
+      <Project>{5c824c4d-746c-4b13-9b71-ceeba37c3b6f}</Project>
+      <Name>AverageBuddy.Windows</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\externals\ResolutionBuddy\Windows\ResolutionBuddy.Windows.csproj">
+      <Project>{28342df0-0089-4a2a-b3d4-6dcd65d6d8e4}</Project>
+      <Name>ResolutionBuddy.Windows</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
