@@ -42,6 +42,9 @@
     <Compile Include="..\Source\Game1.cs">
       <Link>Game1.cs</Link>
     </Compile>
+    <Compile Include="..\Source\Skittle.cs">
+      <Link>Skittle.cs</Link>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
