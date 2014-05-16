@@ -1,4 +1,6 @@
 using Microsoft.Kinect;
+using System.Diagnostics;
+using ResolutionBuddy;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
@@ -26,17 +28,16 @@ namespace KinectSkittles
 		private KinectSensor sensor;
 
 		/// <summary>
-		/// Intermediate storage for the depth data received from the camera
-		/// </summary>
-		private DepthImagePixel[] depthPixels;
-
-		/// <summary>
 		/// Intermediate storage for the depth data converted to color
 		/// </summary>
 		private byte[] colorPixels;
 
 		Texture2D pixels;
 		Color[] pixelData_clear;
+
+		int ScreenX = 1024;
+		int ScreenY = 768;
+		int CellSize = 16;
 
 		#endregion //Members
 
@@ -47,6 +48,11 @@ namespace KinectSkittles
 			graphics = new GraphicsDeviceManager(this);
 			Content.RootDirectory = "Content";
 			Skittles = new List<Skittle>();
+
+			// Change Virtual Resolution
+			Resolution.Init(ref graphics);
+			Resolution.SetDesiredResolution(ScreenX, ScreenY);
+			Resolution.SetScreenResolution(1280, 720, false);
 		}
 
 		/// <summary>
@@ -58,11 +64,11 @@ namespace KinectSkittles
 		protected override void Initialize()
 		{
 			//Create all the skittles
-			for (int i = 0; i < 1024; i += 16)
+			for (int i = 0; i < ScreenX; i += CellSize)
 			{
-				for (int j = 0; j < 768; j += 16)
+				for (int j = 0; j < ScreenY; j += CellSize)
 				{
-					Skittles.Add(new Skittle(new Rectangle(i, j, 16, 16)));
+					Skittles.Add(new Skittle(new Rectangle(i, j, CellSize, CellSize)));
 				}
 			}
 
@@ -105,9 +111,6 @@ namespace KinectSkittles
 				// Turn on the color stream to receive color frames
 				this.sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
 
-				// Allocate space to put the depth pixels we'll receive
-				this.depthPixels = new DepthImagePixel[this.sensor.DepthStream.FramePixelDataLength];
-
 				// Allocate space to put the color pixels we'll create
 				this.colorPixels = new byte[this.sensor.DepthStream.FramePixelDataLength * sizeof(int)];
 
@@ -118,7 +121,6 @@ namespace KinectSkittles
 				try
 				{
 					this.sensor.Start();
-				//	sensor.ColorStream.CameraSettings.BacklightCompensationMode = BacklightCompensationMode.CenterOnly;
 				}
 				catch (IOException)
 				{
@@ -169,7 +171,7 @@ namespace KinectSkittles
 
 			for (int i = 0; i < Skittles.Count; i++)
 			{
-				spriteBatch.Draw(_circle, Skittles[i].Location, Skittles[i].AverageColor);
+				spriteBatch.Draw(_circle, Skittles[i].Location, Skittles[i].AverageColor.Average());
 			}
 
 			spriteBatch.End();
@@ -196,12 +198,40 @@ namespace KinectSkittles
 					// Copy the pixel data from the image to a temporary array
 					colorFrame.CopyPixelDataTo(this.colorPixels);
 
+					//get the width of the image
+					int imageWidth = colorFrame.Width;
+
+					//get the height of the image
+					int imageHeight = colorFrame.Height;
+
+					//get the num cells for each axis
+					int cellsX = ScreenX / CellSize;
+					int cellsY = ScreenY / CellSize;
+
 					 // Convert the depth to RGB
 					for (int colorIndex = 0; colorIndex < colorPixels.Length; colorIndex += 4)
 					{
-						pixelData_clear[colorIndex / 4].R = colorPixels[colorIndex+ 2];
-						pixelData_clear[colorIndex / 4].G = colorPixels[colorIndex + 1];
-						pixelData_clear[colorIndex / 4].B = colorPixels[colorIndex + 0];
+						//get the pixel column
+						int x = colorIndex % colorPixels.Length;
+
+						//get the pixel row
+						int y = colorIndex / colorPixels.Length;
+
+						//convert the image x to cell x
+						int x2 = (x * cellsX) / imageWidth;
+
+						//convert the image y to cell y
+						int y2 = (y * cellsY) / imageHeight;
+
+						//get the index of the cell
+						int cellIndex = (y2 * cellsY) + x2;
+						Debug.Assert(cellIndex < Skittles.Count);
+
+						//Create a new color
+						Color pixelColor = new Color(colorPixels[colorIndex + 2], colorPixels[colorIndex + 1], colorPixels[colorIndex + 0]);
+
+						//add to the cell color
+						Skittles[cellIndex].AverageColor.Add(pixelColor);
 					}
 				}
 			}

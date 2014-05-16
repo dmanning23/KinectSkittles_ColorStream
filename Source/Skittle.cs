@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using AverageBuddy;
 
 namespace KinectSkittles
 {
@@ -11,9 +12,9 @@ namespace KinectSkittles
 		#region Properties
 
 		/// <summary>
-		/// The color to draw this dude
+		/// The color to draw this dude... add a bunch of colors and average them out
 		/// </summary>
-		public Color AverageColor { get; set; }
+		public Averager<Color> AverageColor { get; set; }
 
 		/// <summary>
 		/// The location to draw this dude
@@ -33,7 +34,7 @@ namespace KinectSkittles
 		{
 			Location = loc;
 			Scale = 1.0f;
-			AverageColor = Color.White;
+			AverageColor = new Averager<Color>(10, Color.Black);
 		}
 
 		/// <summary>
