@@ -32,12 +32,13 @@ namespace KinectSkittles
 		/// </summary>
 		private byte[] colorPixels;
 
-		Texture2D pixels;
-		Color[] pixelData_clear;
+		private const int ScreenX = 1024;
+		private const int ScreenY = 768;
+		private const int CellSize = 16;
 
-		int ScreenX = 1024;
-		int ScreenY = 768;
-		int CellSize = 16;
+		//get the num cells for each axis
+		private const int CellsX = ScreenX / CellSize;
+		private const int CellsY = ScreenY / CellSize;
 
 		#endregion //Members
 
@@ -85,13 +86,6 @@ namespace KinectSkittles
 			spriteBatch = new SpriteBatch(GraphicsDevice);
 
 			_circle = Content.Load<Texture2D>("circle");
-
-			pixels = new Texture2D(graphics.GraphicsDevice,
-				640,
-				480, false, SurfaceFormat.Color);
-			pixelData_clear = new Color[640 * 480];
-			for (int i = 0; i < pixelData_clear.Length; ++i)
-				pixelData_clear[i] = Color.Black;
 
 			// Look through all sensors and start the first connected one.
 			// This requires that a Kinect is connected at the time of app startup.
@@ -176,11 +170,6 @@ namespace KinectSkittles
 
 			spriteBatch.End();
 
-			pixels.SetData<Color>(pixelData_clear);
-			spriteBatch.Begin();
-			spriteBatch.Draw(pixels, new Vector2(0, 0), null, Color.White);
-			spriteBatch.End();
-
 			base.Draw(gameTime);
 		}
 
@@ -204,10 +193,6 @@ namespace KinectSkittles
 					//get the height of the image
 					int imageHeight = colorFrame.Height;
 
-					//get the num cells for each axis
-					int cellsX = ScreenX / CellSize;
-					int cellsY = ScreenY / CellSize;
-
 					 // Convert the depth to RGB
 					for (int colorIndex = 0; colorIndex < colorPixels.Length; colorIndex += 4)
 					{
@@ -218,13 +203,13 @@ namespace KinectSkittles
 						int y = colorIndex / colorPixels.Length;
 
 						//convert the image x to cell x
-						int x2 = (x * cellsX) / imageWidth;
+						int x2 = (x * CellsX) / imageWidth;
 
 						//convert the image y to cell y
-						int y2 = (y * cellsY) / imageHeight;
+						int y2 = (y * CellsY) / imageHeight;
 
 						//get the index of the cell
-						int cellIndex = (y2 * cellsY) + x2;
+						int cellIndex = (y2 * CellsY) + x2;
 						Debug.Assert(cellIndex < Skittles.Count);
 
 						//Create a new color
