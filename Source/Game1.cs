@@ -71,7 +71,7 @@ namespace KinectSkittles
 			}
 
 			Resolution.SetDesiredResolution(ScreenX, ScreenY);
-			Resolution.SetScreenResolution(1280, 720, false);
+			Resolution.SetScreenResolution(1280, 720, true);
 
 			base.Initialize();
 		}
@@ -106,7 +106,7 @@ namespace KinectSkittles
 				this.sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
 
 				// Allocate space to put the color pixels we'll create
-				this.colorPixels = new byte[this.sensor.DepthStream.FramePixelDataLength * sizeof(int)];
+				this.colorPixels = new byte[this.sensor.ColorStream.FramePixelDataLength];
 
 				// Add an event handler to be called whenever there is new color frame data
 				this.sensor.ColorFrameReady += this.SensorColorFrameReady;
