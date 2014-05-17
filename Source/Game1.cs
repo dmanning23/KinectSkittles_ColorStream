@@ -1,8 +1,8 @@
 using Microsoft.Kinect;
-using System.Diagnostics;
-using ResolutionBuddy;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using ResolutionBuddy;
 using System.Collections.Generic;
 using System.IO;
 
@@ -50,10 +50,7 @@ namespace KinectSkittles
 			Content.RootDirectory = "Content";
 			Skittles = new List<Skittle>();
 
-			// Change Virtual Resolution
 			Resolution.Init(ref graphics);
-			Resolution.SetDesiredResolution(ScreenX, ScreenY);
-			Resolution.SetScreenResolution(1280, 720, false);
 		}
 
 		/// <summary>
@@ -65,13 +62,16 @@ namespace KinectSkittles
 		protected override void Initialize()
 		{
 			//Create all the skittles
-			for (int i = 0; i < ScreenX; i += CellSize)
+			for (int j = 0; j < ScreenY; j += CellSize)
 			{
-				for (int j = 0; j < ScreenY; j += CellSize)
+				for (int i = 0; i < ScreenX; i += CellSize)
 				{
 					Skittles.Add(new Skittle(new Rectangle(i, j, CellSize, CellSize)));
 				}
 			}
+
+			Resolution.SetDesiredResolution(ScreenX, ScreenY);
+			Resolution.SetScreenResolution(1280, 720, false);
 
 			base.Initialize();
 		}
@@ -128,7 +128,6 @@ namespace KinectSkittles
 			//}
 		}
 
-
 		/// <summary>
 		/// UnloadContent will be called once per game and is the place to unload
 		/// all content.
@@ -148,7 +147,11 @@ namespace KinectSkittles
 		/// <param name="gameTime">Provides a snapshot of timing values.</param>
 		protected override void Update(GameTime gameTime)
 		{
-			// TODO: Add your update logic here
+			if ((GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed) ||
+			Keyboard.GetState().IsKeyDown(Keys.Escape))
+			{
+				this.Exit();
+			}
 
 			base.Update(gameTime);
 		}
@@ -161,11 +164,17 @@ namespace KinectSkittles
 		{
 			GraphicsDevice.Clear(Color.Black);
 
-			spriteBatch.Begin();
+			// Calculate Proper Viewport according to Aspect Ratio
+			Resolution.ResetViewport();
+
+			spriteBatch.Begin(SpriteSortMode.Immediate,
+			BlendState.AlphaBlend,
+			null, null, null, null,
+			Resolution.TransformationMatrix());
 
 			for (int i = 0; i < Skittles.Count; i++)
 			{
-				spriteBatch.Draw(_circle, Skittles[i].Location, Skittles[i].AverageColor.Average());
+				spriteBatch.Draw(_circle, Skittles[i].Location, new Color(Skittles[i].AverageColor.Average()));
 			}
 
 			spriteBatch.End();
@@ -193,30 +202,52 @@ namespace KinectSkittles
 					//get the height of the image
 					int imageHeight = colorFrame.Height;
 
-					 // Convert the depth to RGB
-					for (int colorIndex = 0; colorIndex < colorPixels.Length; colorIndex += 4)
+					// // Convert the depth to RGB
+					//for (int colorIndex = 0; colorIndex < colorPixels.Length; colorIndex += 4)
+					//{
+					//	//get the pixel column
+					//	int x = (colorIndex / 4) % imageWidth;
+
+					//	//get the pixel row
+					//	int y = (colorIndex / 4) / imageWidth;
+
+					//	//convert the image x to cell x
+					//	int x2 = (x * CellsX) / imageWidth;
+
+					//	//convert the image y to cell y
+					//	int y2 = (y * CellsY) / imageHeight;
+
+					//	//get the index of the cell
+					//	int cellIndex = (y2 * CellsX) + x2;
+						
+					//	//Create a new color
+					//	Color pixelColor = new Color(colorPixels[colorIndex + 2], colorPixels[colorIndex + 1], colorPixels[colorIndex + 0]);
+
+					//	//add to the cell color
+					//	Skittles[cellIndex].AverageColor.Add(pixelColor.ToVector3());
+					//}
+
+					// Convert the depth to RGB
+					for (int pixelIndex = 0; pixelIndex < Skittles.Count; pixelIndex++)
 					{
 						//get the pixel column
-						int x = colorIndex % colorPixels.Length;
+						int x = pixelIndex % CellsX;
 
 						//get the pixel row
-						int y = colorIndex / colorPixels.Length;
+						int y = pixelIndex / CellsX;
 
 						//convert the image x to cell x
-						int x2 = (x * CellsX) / imageWidth;
+						int x2 = (x * imageWidth) / CellsX;
 
 						//convert the image y to cell y
-						int y2 = (y * CellsY) / imageHeight;
+						int y2 = (y * imageHeight) / CellsY;
 
 						//get the index of the cell
-						int cellIndex = (y2 * CellsY) + x2;
-						Debug.Assert(cellIndex < Skittles.Count);
+						int imageIndex = ((y2 * imageWidth) + x2) * 4;
 
 						//Create a new color
-						Color pixelColor = new Color(colorPixels[colorIndex + 2], colorPixels[colorIndex + 1], colorPixels[colorIndex + 0]);
-
-						//add to the cell color
-						Skittles[cellIndex].AverageColor.Add(pixelColor);
+						Color pixelColor = new Color(colorPixels[imageIndex + 2], colorPixels[imageIndex + 1], colorPixels[imageIndex + 0]);
+						Skittles[pixelIndex].AverageColor.Add(pixelColor.ToVector3());
 					}
 				}
 			}
